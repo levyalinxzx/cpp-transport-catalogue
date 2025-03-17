@@ -68,10 +68,10 @@ geo::Coordinates Coordinates(std::string_view str) {
  */
 std::vector<std::string_view> Route(std::string_view route) {
     if (route.find('>') != route.npos) {
-            return detail::Split(route, '>');
+            return Split(route, '>');
     }
 
-    auto stops = detail::Split(route, '-');
+    auto stops = Split(route, '-');
     std::vector<std::string_view> results(stops.begin(), stops.end());
     results.insert(results.end(), std::next(stops.rbegin()), stops.rend());
 
