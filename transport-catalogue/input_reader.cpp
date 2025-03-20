@@ -68,10 +68,10 @@ geo::Coordinates Coordinates(std::string_view str) {
  */
 std::vector<std::string_view> Route(std::string_view route) {
     if (route.find('>') != route.npos) {
-            return Split(route, '>');
+            return detail::Split(route, '>');
     }
 
-    auto stops = Split(route, '-');
+    auto stops = detail::Split(route, '-');
     std::vector<std::string_view> results(stops.begin(), stops.end());
     results.insert(results.end(), std::next(stops.rbegin()), stops.rend());
 
@@ -99,7 +99,7 @@ command::Description CommandDescription(std::string_view line) {
             std::string(line.substr(colon_pos + 1))};
 }
 }//namespace parse
-void InputReader::Line(std::string_view line) {
+void InputReader::ParseLine(std::string_view line) {
     auto command_description = parse::CommandDescription(line);
     if (command_description) {
         if(command_description.command == "Stop") {
@@ -115,19 +115,20 @@ void InputReader::Line(std::string_view line) {
 void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue)  {
     for (auto &command_description : commands_stop) {
         auto coordinates = parse::Coordinates(command_description.description);
-        stop_detail::Stop stop = {command_description.id, coordinates};
-        catalogue.AddStop(std::move(stop));
+        Stop stop = {std::string(command_description.id), coordinates};
+        catalogue.AddStop(stop);
     }
     for (auto &command_description : commands_bus) {
         auto route = parse::Route(command_description.description);
-        std::deque<const stop_detail::Stop*> helper;
+        std::vector<const Stop*> helper;
         for (const auto& stop: route) {
-            const stop_detail::Stop* info_stop = catalogue.GetStop(stop);
+            const auto& info_stop = catalogue.GetStop(stop);
             helper.push_back(info_stop);
         }
-        bus_detail::Bus bus = {command_description.id, helper};
-        catalogue.AddBus(std::move(bus));
+        Bus bus = {std::string(command_description.id), helper};
+        catalogue.AddBus(bus);
     }  
 }
 } //namespace detail 
-} //namespace transport_catalogue// место для вашего кода
+} //namespace transport_catalogue
+
