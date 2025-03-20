@@ -5,7 +5,42 @@
 #include <vector>
 namespace transport_catalogue{
 namespace detail { 
-void ParseAndPrintStat(const TransportCatalogue& tansport_catalogue, std::string_view request,
+
+void PrintBus(const TransportCatalogue& transport_catalogue, std::string_view request, std::ostream& output) { 
+    const Bus* bus = transport_catalogue.GetBus(request); 
+    if (bus != nullptr) {
+        auto bus_info = transport_catalogue.GetBusInfo(bus);
+        output << "Bus "  << bus->id << ": " << bus->stops.size() << " stops on route, "
+        << bus_info.unique_stops << " unique stops, " 
+        << bus_info.length_route << " route length" << std::endl;
+    } else {
+        output << "Bus " << request << ": not found" << std::endl;
+    }
+}
+
+void PrintStop(const TransportCatalogue& transport_catalogue, std::string_view request, std::ostream& output) {
+    const Stop* stop = transport_catalogue.GetStop(request);
+    if(!stop) {
+        output << "Stop " << request << ": not found" << std::endl;
+    }else {
+        const auto& buses = transport_catalogue.GetBusesToStop(stop);
+        if(buses.empty()) {
+            output << "Stop " << request << ": no buses" << std::endl;
+        }else {
+            std::vector<const Bus*> buses_vector(buses.begin(), buses.end());
+            std::sort(buses_vector.begin(), buses_vector.end(), [](const Bus* lhs, const Bus* rhs) {
+                return lhs->id < rhs->id;
+            });
+            output << "Stop " << request << ": buses";
+            for (const auto& bus : buses_vector) {
+                output << " " << bus->id;
+            }
+            output << std::endl;
+        }
+    }
+}
+
+void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::string_view request,
                        std::ostream& output) {
     auto start = request.find_first_not_of(' ');                    
     if (start == request.npos) {
@@ -18,34 +53,11 @@ void ParseAndPrintStat(const TransportCatalogue& tansport_catalogue, std::string
     start = request.find_first_not_of(' ');
     std::string_view parse_request = request.substr(start);
     
-    if(command == "Bus") {
-        const bus_detail::Bus* bus = tansport_catalogue.GetBus(parse_request);
-        if (bus != nullptr) {
-            output << "Bus "  << parse_request << ": " << bus->stops.size() << " stops on route, " << tansport_catalogue.GetUniqeStops(bus)
-            << " unique stops, " << tansport_catalogue.GetLongRoute(bus) << " route length" << std::endl;
-        } else {
-            output << "Bus " << parse_request << ": not found" << std::endl;
-        }
+    if(command == "Bus") { 
+        PrintBus(transport_catalogue, parse_request, output);
     }
     if (command == "Stop") {
-        const stop_detail::Stop* stop = tansport_catalogue.GetStop(parse_request);
-        if(!stop) {
-            output << "Stop " << parse_request << ": not found" << std::endl;
-        }else {
-            const auto& buses = tansport_catalogue.GetBusesToStop(stop);
-            if(buses.empty()) {
-                output << "Stop " << parse_request << ": no buses" << std::endl;
-            }else {
-                std::vector<std::string>buses_vector(buses.begin(), buses.end());
-                std::sort(buses_vector.begin(), buses_vector.end());
-                output << "Stop " << parse_request << ": buses";
-                for (const auto& bus : buses) {
-                    output << " " << bus;
-                }
-                output << std::endl;
-            }
-
-        }
+        PrintStop(transport_catalogue, parse_request, output);
     }
 }
 }//namespace detail
