@@ -28,7 +28,7 @@ public:
     /**
      * Парсит строку в структуру CommandDescription и сохраняет результат в commands_stop и commands_bus
      */
-    void Line(std::string_view line);
+    void ParseLine(std::string_view line);
 
     /**
      * Наполняет данными транспортный справочник, используя команды из commands_
