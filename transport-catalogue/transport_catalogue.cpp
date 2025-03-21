@@ -13,33 +13,44 @@ void TransportCatalogue::AddBus(const Bus& bus) {
     buses_.push_back(bus);
     busname_to_bus_.insert({buses_.back().id, &buses_.back()});
     for (const auto& stop : buses_.back().stops) {
-        if (!stopname_to_buses_.count(stop->name)) {
-            stopname_to_buses_.insert({stop->name, {}});
-        }
-        stopname_to_buses_.at(stop->name).insert(&buses_.back());
+        stopname_to_buses_[stop->name].insert(&buses_.back());
     }
 }	
 const Stop* TransportCatalogue::GetStop(std::string_view stop)const {
-    return stopname_to_stop_.count(stop) ? stopname_to_stop_.at(stop) : nullptr;
+    auto it = stopname_to_stop_.find(stop);
+    if(it == stopname_to_stop_.end()) {
+        return nullptr;
+    }
+    return it->second;    
 }
 
 const Bus* TransportCatalogue::GetBus(std::string_view bus) const {
-    return busname_to_bus_.count(bus) ? busname_to_bus_.at(bus) : nullptr;
+    auto it = busname_to_bus_.find(bus);
+    if(it == busname_to_bus_.end()) {
+        return nullptr;
+    }
+    return it->second;    
 }
 
 BusInfo TransportCatalogue::GetBusInfo(const Bus* bus) const {
+    size_t size = GetNumberOfStops(bus);
     int unique_stops = GetUniqueStops(bus);
     double length_route = GetLengthRoute(bus);
-    return {unique_stops, length_route};
+    return {size, unique_stops, length_route};
 }
 
 std::unordered_set<const Bus*> TransportCatalogue::GetBusesToStop(const Stop* stop) const {
-    if (stopname_to_buses_.count(stop->name)) {
-        return stopname_to_buses_.at(stop->name);
-    }
-    return {};
+   static std::unordered_set<const Bus*> empty_set = {};
+   auto it = stopname_to_buses_.find(stop->name);
+   if (it == stopname_to_buses_.end()) {
+       return empty_set;
+   }
+   return it->second;
 }
 
+size_t TransportCatalogue::GetNumberOfStops(const Bus* bus) const {
+    return bus->stops.size();
+}
 
 int TransportCatalogue::GetUniqueStops(const Bus* bus) const {
     std::unordered_set<const Stop*> unique_stops;
@@ -52,5 +63,6 @@ double TransportCatalogue::GetLengthRoute(const Bus* bus) const {
         return detail::geo::ComputeDistance((*lhs).coordinates_, (*rhs).coordinates_);
                             });
 }
+
 
 }//namespace tranport_catalogue
