@@ -40,11 +40,11 @@ std::vector<std::string_view> Split(std::string_view string, char delim) {
     return result;
 }
 
-namespace parse {
 /**
  * Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота)
  */
-geo::Coordinates Coordinates(std::string_view str) {
+
+geo::Coordinates ParseCoordinates(std::string_view str) {
     static const double nan = std::nan("");
 
     auto not_space = str.find_first_not_of(' ');
@@ -66,19 +66,19 @@ geo::Coordinates Coordinates(std::string_view str) {
  * Для кольцевого маршрута (A>B>C>A) возвращает массив названий остановок [A,B,C,A]
  * Для некольцевого маршрута (A-B-C-D) возвращает массив названий остановок [A,B,C,D,C,B,A]
  */
-std::vector<std::string_view> Route(std::string_view route) {
+std::vector<std::string_view> ParseRoute(std::string_view route) {
     if (route.find('>') != route.npos) {
-            return detail::Split(route, '>');
+            return Split(route, '>');
     }
 
-    auto stops = detail::Split(route, '-');
+    auto stops = Split(route, '-');
     std::vector<std::string_view> results(stops.begin(), stops.end());
     results.insert(results.end(), std::next(stops.rbegin()), stops.rend());
 
     return results;
 }
 
-command::Description CommandDescription(std::string_view line) {
+command::Description ParseCommandDescription(std::string_view line) {
     auto colon_pos = line.find(':');
     if (colon_pos == line.npos) {
         return {};
@@ -98,9 +98,9 @@ command::Description CommandDescription(std::string_view line) {
             std::string(line.substr(not_space, colon_pos - not_space)),
             std::string(line.substr(colon_pos + 1))};
 }
-}//namespace parse
+
 void InputReader::ParseLine(std::string_view line) {
-    auto command_description = parse::CommandDescription(line);
+    auto command_description = ParseCommandDescription(line);
     if (command_description) {
         if(command_description.command == "Stop") {
             commands_stop.push_back(std::move(command_description));
@@ -114,21 +114,20 @@ void InputReader::ParseLine(std::string_view line) {
 
 void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue)  {
     for (auto &command_description : commands_stop) {
-        auto coordinates = parse::Coordinates(command_description.description);
-        Stop stop = {std::string(command_description.id), coordinates};
+        auto coordinates = ParseCoordinates(command_description.description);
+        const Stop& stop = {command_description.id, coordinates};
         catalogue.AddStop(stop);
     }
     for (auto &command_description : commands_bus) {
-        auto route = parse::Route(command_description.description);
+        auto route = ParseRoute(command_description.description);
         std::vector<const Stop*> helper;
         for (const auto& stop: route) {
-            const auto& info_stop = catalogue.GetStop(stop);
+            const Stop* info_stop = catalogue.GetStop(stop);
             helper.push_back(info_stop);
         }
-        Bus bus = {std::string(command_description.id), helper};
+        const Bus& bus = {command_description.id, helper};
         catalogue.AddBus(bus);
     }  
 }
 } //namespace detail 
 } //namespace transport_catalogue
-
