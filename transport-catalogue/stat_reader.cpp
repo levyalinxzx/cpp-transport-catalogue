@@ -10,7 +10,7 @@ void PrintBus(const TransportCatalogue& transport_catalogue, std::string_view re
     const Bus* bus = transport_catalogue.GetBus(request); 
     if (bus != nullptr) {
         auto bus_info = transport_catalogue.GetBusInfo(bus);
-        output << "Bus "  << bus->id << ": " << bus->stops.size() << " stops on route, "
+        output << "Bus "  << bus->id << ": " << bus_info.size << " stops on route, "
         << bus_info.unique_stops << " unique stops, " 
         << bus_info.length_route << " route length" << std::endl;
     } else {
