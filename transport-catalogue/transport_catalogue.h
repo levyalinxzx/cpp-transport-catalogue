@@ -24,6 +24,7 @@ struct Bus {
 
 
 struct BusInfo {
+    size_t size;
     int unique_stops;
     double length_route;
 };
@@ -43,8 +44,10 @@ private:
     std::unordered_map<std::string_view, const Stop*> stopname_to_stop_;
     std::unordered_map<std::string_view, const Bus*> busname_to_bus_;
     std::unordered_map<std::string_view, std::unordered_set<const Bus*>> stopname_to_buses_;
-
+    
+    size_t GetNumberOfStops(const Bus* bus) const;
     int GetUniqueStops(const Bus* bus) const;
     double GetLengthRoute(const Bus* bus) const;
 };
+}//namespace transport_catalogue
 }//namespace transport_catalogue
