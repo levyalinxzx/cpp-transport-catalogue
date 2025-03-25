@@ -48,7 +48,7 @@ BusInfo TransportCatalogue::GetBusInfo(const Bus* bus) const {
     return {size, unique_stops, length_route, curvature};
 }
 
-std::unordered_set<const Bus*> TransportCatalogue::GetBusesToStop(const Stop* stop) const {
+const std::unordered_set<const Bus*>& TransportCatalogue::GetBusesToStop(const Stop* stop) const {
    static std::unordered_set<const Bus*> empty_set = {};
    auto it = stopname_to_buses_.find(stop->name);
    if (it == stopname_to_buses_.end()) {
