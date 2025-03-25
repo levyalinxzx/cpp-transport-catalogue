@@ -16,6 +16,14 @@ void TransportCatalogue::AddBus(const Bus& bus) {
         stopname_to_buses_[stop->name].insert(&buses_.back());
     }
 }	
+
+void TransportCatalogue::AddDistance(const std::vector<Distance>& distances) {
+    for (const auto& distance : distances) {
+        auto pair_distance = std::make_pair(distance.A, distance.B);
+        distance_to_stop.insert({pair_distance, distance.length});
+    }
+}
+
 const Stop* TransportCatalogue::GetStop(std::string_view stop)const {
     auto it = stopname_to_stop_.find(stop);
     if(it == stopname_to_stop_.end()) {
@@ -35,8 +43,9 @@ const Bus* TransportCatalogue::GetBus(std::string_view bus) const {
 BusInfo TransportCatalogue::GetBusInfo(const Bus* bus) const {
     size_t size = GetNumberOfStops(bus);
     int unique_stops = GetUniqueStops(bus);
-    double length_route = GetLengthRoute(bus);
-    return {size, unique_stops, length_route};
+    double curvature = GetDistanceToBus(bus)/GetLengthRoute(bus);
+    size_t length_route = GetDistanceToBus(bus);
+    return {size, unique_stops, length_route, curvature};
 }
 
 std::unordered_set<const Bus*> TransportCatalogue::GetBusesToStop(const Stop* stop) const {
@@ -46,6 +55,15 @@ std::unordered_set<const Bus*> TransportCatalogue::GetBusesToStop(const Stop* st
        return empty_set;
    }
    return it->second;
+}
+
+size_t TransportCatalogue::GetDistanceToBus(const Bus* bus) const {
+    size_t distance = 0;
+    auto stops_size = bus->stops.size() - 1;
+    for (int i = 0; i < stops_size; i++) {
+        distance += GetDistance(bus->stops[i], bus->stops[i+1]);
+    }
+    return distance;
 }
 
 size_t TransportCatalogue::GetNumberOfStops(const Bus* bus) const {
@@ -65,4 +83,20 @@ double TransportCatalogue::GetLengthRoute(const Bus* bus) const {
 }
 
 
+size_t TransportCatalogue::GetDistance(const Stop* first, const Stop* second) const {
+    try {
+        auto distance_pair = std::make_pair(first, second);
+        return distance_to_stop.at(distance_pair);
+    } catch(const std::out_of_range &e) {
+        try{
+            auto distance_pair = std::make_pair(second, first);
+            return distance_to_stop.at(distance_pair);
+        }
+        catch(const std::out_of_range &e) {
+            return 0;
+        }
+    }
+}
+
 }//namespace tranport_catalogue
+
