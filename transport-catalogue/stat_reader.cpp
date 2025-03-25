@@ -1,6 +1,7 @@
 #include "stat_reader.h"
 
 #include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include <vector>
 namespace transport_catalogue{
@@ -11,8 +12,9 @@ void PrintBus(const TransportCatalogue& transport_catalogue, std::string_view re
     if (bus != nullptr) {
         auto bus_info = transport_catalogue.GetBusInfo(bus);
         output << "Bus "  << bus->id << ": " << bus_info.size << " stops on route, "
-        << bus_info.unique_stops << " unique stops, " 
-        << bus_info.length_route << " route length" << std::endl;
+        << bus_info.unique_stops << " unique stops, "
+        << static_cast<double>(bus_info.length_route) << " route length, "
+       	<< bus_info.curvature << " curvature" <<  std::endl;
     } else {
         output << "Bus " << request << ": not found" << std::endl;
     }
