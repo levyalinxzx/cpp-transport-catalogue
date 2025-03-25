@@ -55,7 +55,7 @@ public:
     const Stop* GetStop(std::string_view stop) const;
     const Bus* GetBus(std::string_view bus) const ;
     BusInfo GetBusInfo(const Bus* bus) const;
-    std::unordered_set<const Bus*> GetBusesToStop(const Stop* stop) const; 
+    const std::unordered_set<const Bus*>& GetBusesToStop(const Stop* stop) const; 
     size_t GetDistanceToBus(const Bus* bus) const;
 private:
     std::deque<Stop> stops_;
