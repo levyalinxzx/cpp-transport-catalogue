@@ -99,6 +99,28 @@ command::Description ParseCommandDescription(std::string_view line) {
             std::string(line.substr(colon_pos + 1))};
 }
 
+std::vector<Distance> ParseDistance(std::string_view line, std::string_view stop_name, TransportCatalogue& catalogue) {
+    std::vector<Distance> result;
+    auto command = line.find(',');
+    auto command2 = line.find(',', command + 1);
+    if (command2 == line.npos) {
+        return {};
+    }
+    std::string_view str = line.substr(command2 + 1);
+    auto pos = str.find_first_not_of(' ');
+    str = str.substr(pos);
+    while (command != str.npos) {
+        command = str.find(',');
+        std::string_view str2 = str.substr(0, command); 
+        int distance = std::stoi(std::string(str2.substr(0, str.find('m'))));
+        pos = str2.find("to");
+        std::string_view stop_name2 = str2.substr(pos + 3, command - (pos + 3));
+        str = str.substr(command + 1); 
+        result.push_back({catalogue.GetStop(stop_name), catalogue.GetStop(stop_name2), distance});
+    }
+    return result;  
+}
+
 void InputReader::ParseLine(std::string_view line) {
     auto command_description = ParseCommandDescription(line);
     if (command_description) {
@@ -113,19 +135,25 @@ void InputReader::ParseLine(std::string_view line) {
 
 
 void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue)  {
-    for (auto &command_description : commands_stop) {
-        auto coordinates = ParseCoordinates(command_description.description);
-        const Stop& stop = {command_description.id, coordinates};
+    for (auto &command : commands_stop) {
+        auto coordinates = ParseCoordinates(command.description);
+        const Stop& stop = {command.id, coordinates};
         catalogue.AddStop(stop);
     }
-    for (auto &command_description : commands_bus) {
-        auto route = ParseRoute(command_description.description);
+
+    for (auto &command : commands_stop) {
+        const std::vector<Distance> stop_distance = ParseDistance(command.description, command.id, catalogue);
+        catalogue.AddDistance(stop_distance);
+    }
+
+    for (auto &command : commands_bus) {
+        auto route = ParseRoute(command.description);
         std::vector<const Stop*> helper;
         for (const auto& stop: route) {
             const Stop* info_stop = catalogue.GetStop(stop);
             helper.push_back(info_stop);
         }
-        const Bus& bus = {command_description.id, helper};
+        const Bus& bus = {command.id, helper};
         catalogue.AddBus(bus);
     }  
 }
