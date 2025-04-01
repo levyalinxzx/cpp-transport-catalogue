@@ -99,12 +99,11 @@ command::Description ParseCommandDescription(std::string_view line) {
             std::string(line.substr(colon_pos + 1))};
 }
 
-std::vector<Distance> ParseDistance(std::string_view line, std::string_view stop_name, TransportCatalogue& catalogue) {
-    std::vector<Distance> result;
+void ParseAndSetDistance(std::string_view line, std::string_view stop_name, TransportCatalogue& catalogue) {
     auto command = line.find(',');
     auto command2 = line.find(',', command + 1);
     if (command2 == line.npos) {
-        return {};
+        return;
     }
     std::string_view str = line.substr(command2 + 1);
     auto pos = str.find_first_not_of(' ');
@@ -116,9 +115,8 @@ std::vector<Distance> ParseDistance(std::string_view line, std::string_view stop
         pos = str2.find("to");
         std::string_view stop_name2 = str2.substr(pos + 3, command - (pos + 3));
         str = str.substr(command + 1); 
-        result.push_back({catalogue.GetStop(stop_name), catalogue.GetStop(stop_name2), distance});
-    }
-    return result;  
+        catalogue.SetDistance(catalogue.GetStop(stop_name), catalogue.GetStop(stop_name2), distance);	
+    }  
 }
 
 void InputReader::ParseLine(std::string_view line) {
@@ -142,8 +140,7 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
     }
 
     for (auto &command : commands_stop) {
-        const std::vector<Distance> stop_distance = ParseDistance(command.description, command.id, catalogue);
-        catalogue.AddDistance(stop_distance);
+        ParseAndSetDistance(command.description, command.id, catalogue);
     }
 
     for (auto &command : commands_bus) {
