@@ -9,6 +9,7 @@ void TransportCatalogue::AddStop(const Stop& stop) {
     stops_.push_back(stop);
     stopname_to_stop_.insert({stops_.back().name, &stops_.back()});
 }
+
 void TransportCatalogue::AddBus(const Bus& bus) {
     buses_.push_back(bus);
     busname_to_bus_.insert({buses_.back().id, &buses_.back()});
@@ -38,21 +39,12 @@ const Bus* TransportCatalogue::GetBus(std::string_view bus) const {
     return it->second;    
 }
 
-BusInfo TransportCatalogue::GetBusInfo(const Bus* bus) const {
-    size_t size = GetNumberOfStops(bus);
-    int unique_stops = GetUniqueStops(bus);
-    double curvature = GetDistanceToBus(bus)/GetLengthRoute(bus);
-    int length_route = GetDistanceToBus(bus);
-    return {size, unique_stops, length_route, curvature};
-}
-
-const std::unordered_set<const Bus*>& TransportCatalogue::GetBusesToStop(const Stop* stop) const {
-   static std::unordered_set<const Bus*> empty_set = {};
-   auto it = stopname_to_buses_.find(stop->name);
-   if (it == stopname_to_buses_.end()) {
-       return empty_set;
-   }
-   return it->second;
+const std::map<std::string_view, const Bus*> TransportCatalogue::GetSortedAllBuses() const {
+    std::map<std::string_view, const Bus*> result;
+    for (const auto& bus : busname_to_bus_) {
+        result.emplace(bus);
+    }
+    return result;
 }
 
 int TransportCatalogue::GetDistanceToBus(const Bus* bus) const {
@@ -76,18 +68,18 @@ int TransportCatalogue::GetUniqueStops(const Bus* bus) const {
 
 double TransportCatalogue::GetLengthRoute(const Bus* bus) const { 
     return transform_reduce(next(bus->stops.begin()),bus->stops.end(), bus->stops.begin(), 0.0, std::plus<>{}, [](const Stop* lhs, const Stop* rhs) { 
-        return detail::geo::ComputeDistance((*lhs).coordinates_, (*rhs).coordinates_);
+        return geo::ComputeDistance((*lhs).coordinates_, (*rhs).coordinates_);
                             });
 }
 
 
 int TransportCatalogue::GetDistance(const Stop* first, const Stop* second) const {
-    auto distance_pair = std::make_pair(first, second);
+        auto distance_pair = std::make_pair(first, second);
 	auto search = distance_to_stop.find(distance_pair);
 	if (search != distance_to_stop.end()) {
 	    return search->second;
 	}
-    distance_pair = std::make_pair(second, first);
+        distance_pair = std::make_pair(second, first);
 	search = distance_to_stop.find(distance_pair);
 	if (search != distance_to_stop.end()) {
 	    return search->second;
@@ -95,4 +87,12 @@ int TransportCatalogue::GetDistance(const Stop* first, const Stop* second) const
         return 0;
 }
 
+const std::unordered_set<const Bus*>& TransportCatalogue::GetBusesToStop(const Stop* stop) const {
+    static std::unordered_set<const Bus*> empty_set = {};
+    auto it = stopname_to_buses_.find(stop->name);
+    if (it == stopname_to_buses_.end()) {
+        return empty_set;
+    }
+    return it->second;
+ }
 }//namespace tranport_catalogue
