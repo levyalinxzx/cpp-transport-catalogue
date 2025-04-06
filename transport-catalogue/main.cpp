@@ -14,4 +14,4 @@ int main() {
      
     RequestHandler rh(catalogue, renderer);
     json_doc.ProcessRequests(stat_requests, rh);
-
+}
