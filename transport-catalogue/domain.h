@@ -9,14 +9,14 @@
 namespace transport_catalogue{
 struct Stop
 {
-	std::string name;
-	geo::Coordinates coordinates_;
+    std::string name;
+    geo::Coordinates coordinates_;
 };
 
 
 struct Bus {
-	std::string id;
-	std::vector<const Stop*> stops;	
+    std::string id;
+    std::vector<const Stop*> stops;	
     bool is_circle;
 };
 
