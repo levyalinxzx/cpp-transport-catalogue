@@ -3,32 +3,16 @@
 #include <string>
 #include <deque>
 #include <vector>
+#include <map>
 #include <unordered_set>
 #include <set>
 #include <unordered_map>
 #include <utility>
 
 #include "geo.h"
+#include "domain.h"
 
 namespace transport_catalogue {
-struct Stop
-{
-	std::string name;
-	detail::geo::Coordinates coordinates_;
-};
-
-
-struct Bus {
-	std::string id;
-	std::vector<const Stop*> stops;	
-};
-
-struct BusInfo {
-    size_t size;
-    int unique_stops;
-    int length_route;
-    double curvature;
-};
 
 struct DistanceHasher {
     std::hash<const void*> hasher;
@@ -46,9 +30,14 @@ public:
     void AddBus(const Bus& bus);
     void SetDistance(const Stop* first, const Stop* second, int distance);
     const Stop* GetStop(std::string_view stop) const;
-    const Bus* GetBus(std::string_view bus) const ;
-    BusInfo GetBusInfo(const Bus* bus) const;
-    const std::unordered_set<const Bus*>& GetBusesToStop(const Stop* stop) const; 
+    const Bus* GetBus(std::string_view bus) const ; 
+    std::vector<std::string> GetSortedBusesToStop(const Stop* stop) const ;
+    const std::map<std::string_view, const Bus*> GetSortedAllBuses() const;
+    size_t GetNumberOfStops(const Bus* bus) const;
+    int GetUniqueStops(const Bus* bus) const;
+    double GetLengthRoute(const Bus* bus) const;
+    int GetDistanceToBus(const Bus* bus) const;
+    const std::unordered_set<const Bus*>& GetBusesToStop(const Stop* stop) const;
 private:
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;
@@ -57,10 +46,7 @@ private:
     std::unordered_map<std::string_view, std::unordered_set<const Bus*>> stopname_to_buses_;
     std::unordered_map<std::pair<const Stop*, const Stop*>, int, DistanceHasher> distance_to_stop;
 
-    size_t GetNumberOfStops(const Bus* bus) const;
-    int GetUniqueStops(const Bus* bus) const;
-    double GetLengthRoute(const Bus* bus) const;
     int GetDistance(const Stop* first, const Stop* second) const;
-    int GetDistanceToBus(const Bus* bus) const;
 };
+}//namespace transport_catalogue
 }//namespace transport_catalogue
