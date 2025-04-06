@@ -141,14 +141,14 @@ void JsonReader::ProcessRequests(const json::Node& stat_requests, RequestHandler
         const auto& request_map = request.AsMap();
         const auto& type = request_map.at("type").AsString();
         if (type == "Stop") result.push_back(PrintStop(request_map, rh).AsMap());
-        if (type == "Bus") result.push_back(PrintRoute(request_map, rh).AsMap());
+        if (type == "Bus") result.push_back(PrintBus(request_map, rh).AsMap());
         if (type == "Map") result.push_back(PrintMap(request_map, rh).AsMap());
     }
 
     json::Print(json::Document{ result }, std::cout);
 }
  
- const json::Node JsonReader::PrintRoute(const json::Dict& request_map, RequestHandler& rh) const {
+ const json::Node JsonReader::PrintBus(const json::Dict& request_map, RequestHandler& rh) const {
      json::Dict result;
      const std::string& route_number = request_map.at("name").AsString();
      result["request_id"] = request_map.at("id").AsInt();
