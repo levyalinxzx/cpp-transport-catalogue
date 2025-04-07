@@ -24,7 +24,7 @@ bool RequestHandler::IsStopName(const std::string_view stop_name) const {
 std::vector<std::string> RequestHandler::GetSortedBusesToStop(std::string_view stop_name) const {
     const transport_catalogue::Stop* stop = catalogue_.GetStop(stop_name);
     std::vector<std::string> buses_vector;
-        for (auto& bus : catalogue_.GetBusesToStop(stop)) {
+        for (const auto& bus : catalogue_.GetBusesToStop(stop)) {
             buses_vector.push_back(bus->id);
         }
 	    std::sort(buses_vector.begin(), buses_vector.end());
