@@ -39,13 +39,14 @@ const Bus* TransportCatalogue::GetBus(std::string_view bus) const {
     return it->second;    
 }
 
-const std::map<std::string_view, const Bus*> TransportCatalogue::GetSortedAllBuses() const {
-    std::map<std::string_view, const Bus*> result;
-    for (const auto& bus : busname_to_bus_) {
-        result.emplace(bus);
-    }
-    return result;
+const std::deque<Bus>& TransportCatalogue::GetSortedAllBuses() const {
+    static std::deque<Bus> buses{buses_};
+    std::sort(buses.begin(), buses.end(), [](const Bus& lhs, const Bus& rhs) {
+        return lhs.id < rhs.id;
+    });
+    return buses;
 }
+
 
 int TransportCatalogue::GetDistanceToBus(const Bus* bus) const {
     int distance = 0;
@@ -72,7 +73,6 @@ double TransportCatalogue::GetLengthRoute(const Bus* bus) const {
                             });
 }
 
-
 int TransportCatalogue::GetDistance(const Stop* first, const Stop* second) const {
         auto distance_pair = std::make_pair(first, second);
 	auto search = distance_to_stop.find(distance_pair);
@@ -94,5 +94,6 @@ const std::unordered_set<const Bus*>& TransportCatalogue::GetBusesToStop(const S
         return empty_set;
     }
     return it->second;
- }
+}
+
 }//namespace tranport_catalogue
