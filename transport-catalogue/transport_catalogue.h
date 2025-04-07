@@ -30,9 +30,9 @@ public:
     void AddBus(const Bus& bus);
     void SetDistance(const Stop* first, const Stop* second, int distance);
     const Stop* GetStop(std::string_view stop) const;
-    const Bus* GetBus(std::string_view bus) const ; 
-    std::vector<std::string> GetSortedBusesToStop(const Stop* stop) const ;
-    const std::map<std::string_view, const Bus*> GetSortedAllBuses() const;
+    const Bus* GetBus(std::string_view bus) const; 
+    const std::deque<Bus>& GetSortedAllBuses() const;
+    //GetBusInfo я перенес в request_handler.cpp
     size_t GetNumberOfStops(const Bus* bus) const;
     int GetUniqueStops(const Bus* bus) const;
     double GetLengthRoute(const Bus* bus) const;
@@ -48,5 +48,4 @@ private:
 
     int GetDistance(const Stop* first, const Stop* second) const;
 };
-}//namespace transport_catalogue
 }//namespace transport_catalogue
