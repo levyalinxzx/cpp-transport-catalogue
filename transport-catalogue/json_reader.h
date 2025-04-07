@@ -20,7 +20,7 @@ public:
     void FillCatalogue(transport_catalogue::TransportCatalogue& catalogue);
     renderer::MapRenderer FillRenderSettings(const json::Dict& request_map) const;
 
-    const json::Node PrintRoute(const json::Dict& request_map, RequestHandler& rh) const;
+    const json::Node PrintBus(const json::Dict& request_map, RequestHandler& rh) const;
     const json::Node PrintStop(const json::Dict& request_map, RequestHandler& rh) const;
     const json::Node PrintMap(const json::Dict& request_map, RequestHandler& rh) const;
 
@@ -34,4 +34,8 @@ private:
     void FillStopDistances(transport_catalogue::TransportCatalogue& catalogue, const json::Array& stops_requests) const;
     const transport_catalogue::Bus FillRoute(const json::Dict& request_map, transport_catalogue::TransportCatalogue& catalogue) const;
     const std::tuple<json::Array, json::Array> SortedRequests(const json::Array& base_request) const;
+    void AddStops(const json::Array& stops_requests, transport_catalogue::TransportCatalogue& catalogue);
+    void AddBuses(const json::Array& buses_requests, transport_catalogue::TransportCatalogue& catalogue);
+    std::vector<svg::Color> ReadColors(const json::Array &json) const ;
+    svg::Color ReadColor(const json::Node &json) const ;
 };
