@@ -14,6 +14,7 @@ class Node;
 // Сохраните объявления Dict и Array без изменения
 using Dict = std::map<std::string, Node>;
 using Array = std::vector<Node>;
+using Value = std::variant<std::nullptr_t, std::string, int, double, bool, Array, Dict>;
 
 // Эта ошибка должна выбрасываться при ошибках парсинга JSON
 class ParsingError : public std::runtime_error {
@@ -21,19 +22,12 @@ public:
     using runtime_error::runtime_error;
 };
 
-class Node {
-public:
-    /* Реализуйте Node, используя std::variant */
-    using Value = std::variant<std::nullptr_t, std::string, int, double, bool, Array, Dict>;
 
-    Node() = default;
-    Node(std::nullptr_t);
-    Node(std::string value);
-    Node(int value);
-    Node(double value);
-    Node(bool value);
-    Node(Array array);
-    Node(Dict map);
+class Node : public Value {
+public:
+    using Value::variant;
+     
+    Node(variant value);
 
     bool IsInt() const;
     bool IsDouble() const;
@@ -53,8 +47,11 @@ public:
 
     const Value& GetValue() const;
 
-    bool operator==(const Node& rhs) const;
-    bool operator!=(const Node& rhs) const;
+    const variant &GetNodeType() const;
+    variant &GetNodeType();
+
+    bool operator==(const Node &rhs) const;
+    bool operator!=(const Node &rhs) const;
 
 private:
     Value value_;
@@ -92,17 +89,18 @@ struct PrintContext {
     }
 };
 
-struct ValuePrinter {
-    std::ostream& out;
-    void operator()(std::nullptr_t);
-    void operator()(std::string value);
-    void operator()(int value);
-    void operator()(double value);
-    void operator()(bool value);
-    void operator()(Array array);
-    void operator()(Dict dict);
-};
 
-void Print(const Document& doc, std::ostream& out);
+void PrintValue(std::nullptr_t, const PrintContext& ctx);
+void PrintValue(std::string value, const PrintContext& ctx);
+void PrintValue(bool value, const PrintContext& ctx);
+void PrintValue(Array array, const PrintContext& ctx);
+void PrintValue(Dict dict, const PrintContext& ctx);
+template <typename Value>
+void PrintValue(const Value& value, const PrintContext& ctx) {
+    ctx.out << value;
+}
+
+void PrintNode(const Node& node, const PrintContext& ctx);
+void Print(const Document& doc, std::ostream& output);
 
 }  // namespace json
