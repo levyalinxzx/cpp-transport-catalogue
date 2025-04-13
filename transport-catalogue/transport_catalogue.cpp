@@ -47,10 +47,18 @@ const std::deque<Bus>& TransportCatalogue::GetSortedAllBuses() const {
     return buses;
 }
 
+const transport_catalogue::BusInfo TransportCatalogue::GetBusInfo(std::string_view bus_name) const {
+    const transport_catalogue::Bus* bus = GetBus(bus_name);
+    size_t size = GetNumberOfStops(bus);
+    int unique_stops = GetUniqueStops(bus);
+    double curvature = GetDistanceToBus(bus)/GetLengthRoute(bus);
+    int length_route = GetDistanceToBus(bus);
+    return {size, unique_stops, length_route, curvature};
+}
 
 int TransportCatalogue::GetDistanceToBus(const Bus* bus) const {
     int distance = 0;
-    auto stops_size = bus->stops.size() - 1;
+    int stops_size = bus->stops.size() - 1;
     for (int i = 0; i < stops_size; i++) {
         distance += GetDistance(bus->stops[i], bus->stops[i+1]);
     }
@@ -73,8 +81,9 @@ double TransportCatalogue::GetLengthRoute(const Bus* bus) const {
                             });
 }
 
+
 int TransportCatalogue::GetDistance(const Stop* first, const Stop* second) const {
-        auto distance_pair = std::make_pair(first, second);
+    auto distance_pair = std::make_pair(first, second);
 	auto search = distance_to_stop.find(distance_pair);
 	if (search != distance_to_stop.end()) {
 	    return search->second;
