@@ -14,7 +14,7 @@ class Node;
 // Сохраните объявления Dict и Array без изменения
 using Dict = std::map<std::string, Node>;
 using Array = std::vector<Node>;
-using Value = std::variant<std::nullptr_t, std::string, int, double, bool, Array, Dict>;
+using NodeType = std::variant<std::nullptr_t, std::string, int, double, bool, Array, Dict>;
 
 // Эта ошибка должна выбрасываться при ошибках парсинга JSON
 class ParsingError : public std::runtime_error {
@@ -23,9 +23,9 @@ public:
 };
 
 
-class Node : public Value {
+class Node : public NodeType {
 public:
-    using Value::variant;
+    using NodeType::variant;
      
     Node(variant value);
 
@@ -36,16 +36,16 @@ public:
     bool IsString() const;
     bool IsNull() const;
     bool IsArray() const;
-    bool IsMap() const;
+    bool IsDict() const;
 
     int AsInt() const;
     bool AsBool() const;
     double AsDouble() const;
     const std::string& AsString() const;
     const Array& AsArray() const;
-    const Dict& AsMap() const;
+    const Dict& AsDict() const;
 
-    const Value& GetValue() const;
+    NodeType& GetValue();
 
     const variant &GetNodeType() const;
     variant &GetNodeType();
@@ -53,8 +53,6 @@ public:
     bool operator==(const Node &rhs) const;
     bool operator!=(const Node &rhs) const;
 
-private:
-    Value value_;
 };
 
 class Document {
@@ -99,7 +97,6 @@ template <typename Value>
 void PrintValue(const Value& value, const PrintContext& ctx) {
     ctx.out << value;
 }
-
 void PrintNode(const Node& node, const PrintContext& ctx);
 void Print(const Document& doc, std::ostream& output);
 
