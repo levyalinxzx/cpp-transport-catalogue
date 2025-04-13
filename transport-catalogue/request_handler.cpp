@@ -4,15 +4,6 @@
 #include <algorithm>
 #include <sstream>
 
-transport_catalogue::BusInfo RequestHandler::GetBusInfo(std::string_view bus_name) const {
-    const transport_catalogue::Bus* bus = catalogue_.GetBus(bus_name);
-    size_t size = catalogue_.GetNumberOfStops(bus);
-    int unique_stops = catalogue_.GetUniqueStops(bus);
-    double curvature = catalogue_.GetDistanceToBus(bus)/catalogue_.GetLengthRoute(bus);
-    int length_route = catalogue_.GetDistanceToBus(bus);
-    return {size, unique_stops, length_route, curvature};
-}
-
 bool RequestHandler::IsBusNumber(const std::string_view bus_number) const {
     return catalogue_.GetBus(bus_number);
 }
@@ -33,6 +24,11 @@ std::vector<std::string> RequestHandler::GetSortedBusesToStop(std::string_view s
 
 svg::Document RequestHandler::RenderMap() const {
     return renderer_.GetSVG(catalogue_.GetSortedAllBuses());
+}
+
+const transport_catalogue::BusInfo RequestHandler::GetBusStat(std::string_view bus_name) const {
+    const auto& bus_info = catalogue_.GetBusInfo(bus_name);
+    return bus_info;
 }
  
 
