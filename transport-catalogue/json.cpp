@@ -263,7 +263,7 @@ bool Node::IsArray() const {
     return holds_alternative<Array>(*this);
 }
 
-bool Node::IsMap() const {
+bool Node::IsDict() const {
     return holds_alternative<Dict>(*this);
 }
 
@@ -295,13 +295,13 @@ const Array& Node::AsArray() const {
     return std::get<Array>(*this);
 }
 
-const Dict& Node::AsMap() const {
-    if (!IsMap()) throw std::logic_error("wrong type");
+const Dict& Node::AsDict() const {
+    if (!IsDict()) throw std::logic_error("wrong type");
     return std::get<Dict>(*this);
 }
 
-const Node::variant& Node::GetValue() const {
-    return value_;
+Node::variant& Node::GetValue()  {
+    return *this;
 }
 
 bool Node::operator==(const Node &rhs) const {
@@ -401,7 +401,6 @@ void PrintValue(Dict dict, const PrintContext& ctx) {
     ctx.PrintIndent();
     ctx.out << "}"sv;
 }
-
 
 void PrintNode(const Node& node, const PrintContext& ctx) {
     std::visit([&ctx](const auto& value) {
