@@ -300,7 +300,7 @@ const Dict& Node::AsDict() const {
     return std::get<Dict>(*this);
 }
 
-Node::variant& Node::GetValue()  {
+Node::variant& Node::GetValue() {
     return *this;
 }
 
