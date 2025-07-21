@@ -102,16 +102,18 @@ public:
         : render_settings_(render_settings)
     {}
      
-    std::vector<svg::Polyline> GetRouteLines(const std::deque<transport_catalogue::Bus>& buses, const SphereProjector& sp) const;
+    std::vector<svg::Polyline> GetRouteLines(const std::deque<tc::Bus>& buses, const SphereProjector& sp) const;
      
-    std::vector<svg::Text> GetBusLabel(const std::deque<transport_catalogue::Bus>& buses, const SphereProjector& sp) const;
+    std::vector<svg::Text> GetBusLabel(const std::deque<tc::Bus>& buses, const SphereProjector& sp) const;
 
-    std::vector<svg::Circle> GetStopsSymbols(std::map<std::string_view, const transport_catalogue::Stop*> stops, const SphereProjector& sp) const;
+    std::vector<svg::Circle> GetStopsSymbols(std::map<std::string_view, const tc::Stop*> stops, const SphereProjector& sp) const;
 
-    std::vector<svg::Text> GetStopsLabels(std::map<std::string_view, const transport_catalogue::Stop*> stops, const SphereProjector& sp) const;
+    std::vector<svg::Text> GetStopsLabels(std::map<std::string_view, const tc::Stop*> stops, const SphereProjector& sp) const;
 
-    svg::Document GetSVG(const std::deque<transport_catalogue::Bus>& buses) const;
+    svg::Document GetSVG(const std::deque<tc::Bus>& buses) const;
      
 private:
     const RenderSettings render_settings_;
 };
+ 
+}
