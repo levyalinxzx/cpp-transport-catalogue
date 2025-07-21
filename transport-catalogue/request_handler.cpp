@@ -12,22 +12,30 @@ bool RequestHandler::IsStopName(const std::string_view stop_name) const {
     return catalogue_.GetStop(stop_name);
 }
 
-std::vector<std::string> RequestHandler::GetSortedBusesToStop(std::string_view stop_name) const {
-    const transport_catalogue::Stop* stop = catalogue_.GetStop(stop_name);
-    std::vector<std::string> buses_vector;
-        for (const auto& bus : catalogue_.GetBusesToStop(stop)) {
-            buses_vector.push_back(bus->id);
-        }
-	    std::sort(buses_vector.begin(), buses_vector.end());
-    return buses_vector;
+const tc::Buses* RequestHandler::GetBusesToStop(std::string_view stop_name) const {
+    const tc::Stop* stop = catalogue_.GetStop(stop_name);
+
+    return stop ? &(catalogue_.GetBusesToStop(stop)) : nullptr;;
 }
 
 svg::Document RequestHandler::RenderMap() const {
     return renderer_.GetSVG(catalogue_.GetSortedAllBuses());
 }
 
-const transport_catalogue::BusInfo RequestHandler::GetBusStat(std::string_view bus_name) const {
-    const auto& bus_info = catalogue_.GetBusInfo(bus_name);
+std::optional<tc::router::RouteInfo> RequestHandler::FindRoute(std::string_view stop_name_from,
+  std::string_view stop_name_to) const {
+  const tc::Stop *from = catalogue_.GetStop(stop_name_from);
+  const tc::Stop *to = catalogue_.GetStop(stop_name_to);
+
+  if (from != nullptr && to != nullptr) {
+    return router_.FindRoute(from, to);
+  } else {
+    return std::nullopt;
+  }
+}
+
+const tc::BusInfo RequestHandler::GetBusStat(std::string_view bus_name) const {
+    const tc::BusInfo bus_info = catalogue_.GetBusInfo(bus_name);
     return bus_info;
 }
  
