@@ -10,8 +10,12 @@ Builder::Builder() {
 DictKeyContext Builder::Key(std::string key) {
     auto* top_node = nodes_stack_.back();
 
-    if (top_node->IsDict() && !key_) key_ = std::move(key);
-    else throw std::logic_error("Wrong map key: " + key);
+    if (top_node->IsDict() && !key_){ 
+        key_ = std::move(key);
+    }
+    else {
+        throw std::logic_error("Wrong map key: " + key);
+    }
 
     return *this;
 }
@@ -20,7 +24,9 @@ Builder& Builder::Value(NodeType value) {
     auto* top_node = nodes_stack_.back();
 
     if (top_node->IsDict()) {
-        if (!key_) throw std::logic_error("Could not Value() for dict without key");
+        if (!key_){
+            throw std::logic_error("Could not Value() for dict without key");
+        }
         auto& dict = std::get<Dict>(top_node->GetValue());
         auto [pos, _] = dict.emplace(std::move(key_.value()), Node{});
         key_ = std::nullopt;
@@ -35,7 +41,9 @@ Builder& Builder::Value(NodeType value) {
     else if (root_.IsNull()) {
         root_.GetValue() = std::move(value);
     }
-    else throw std::logic_error("Value() called in unknow container");
+    else {
+        throw std::logic_error("Value() called in unknow container");
+    }
 
     return *this;
 }
@@ -44,7 +52,9 @@ DictItemContext Builder::StartDict() {
     auto* top_node = nodes_stack_.back();
 
     if (top_node->IsDict()) {
-        if (!key_) throw std::logic_error("Could not StartDict() for dict without key");
+        if (!key_) {
+            throw std::logic_error("Could not StartDict() for dict without key");
+        }
         auto& dict = std::get<Dict>(top_node->GetValue());
         auto [pos, _] = dict.emplace(std::move(key_.value()), Dict());
         key_ = std::nullopt;
@@ -58,7 +68,9 @@ DictItemContext Builder::StartDict() {
     else if (top_node->IsNull()) {
         top_node->GetValue() = Dict();
     }
-    else throw std::logic_error("Wrong prev node");
+    else {
+        throw std::logic_error("Wrong prev node");
+    }
 
     return *this;
 }
@@ -98,14 +110,18 @@ ArrayItemContext Builder::StartArray() {
 Builder& Builder::EndArray() {
     auto* top_node = nodes_stack_.back();
 
-    if (!top_node->IsArray()) throw std::logic_error("Prev node is not an Array");
+    if (!top_node->IsArray()) {
+        throw std::logic_error("Prev node is not an Array");
+    }
     nodes_stack_.pop_back();
 
     return *this;
 }
 
 Node Builder::Build() {
-    if (root_.IsNull() || nodes_stack_.size() > 1) throw std::logic_error("Wrong Build()");
+    if (root_.IsNull() || nodes_stack_.size() > 1) {
+        throw std::logic_error("Wrong Build()");
+    }
     return root_;
 }
 
