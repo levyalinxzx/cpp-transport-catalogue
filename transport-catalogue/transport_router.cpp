@@ -3,15 +3,15 @@
 
 namespace tc::router {
 
-TransportRouter::TransportRouter(RoutingSettings settings, const TransportCatalogue &cat)
+TransportRouter::TransportRouter(RoutingSettings settings, const TransportCatalogue& catalogue)
   : settings_(settings) {
-  const auto &stops = cat.GetStops();
+  const auto& stops = catalogue.GetStops();
   const size_t vertex_count = stops.size() * 2;  // По две вершины на остановку
   graph_ = graph::DirectedWeightedGraph<Minutes>(vertex_count);
   vertexes_.resize(vertex_count);
 
-  AddStopsToGraph(cat);
-  AddBusesToGraph(cat);
+  AddStopsToGraph(catalogue);
+  AddBusesToGraph(catalogue);
 
   router_ = std::make_unique<graph::Router<Minutes>>(graph_);
 }
@@ -20,15 +20,15 @@ void TransportRouter::UpdateRouterPtr() {
   router_ = std::make_unique<graph::Router<Minutes>>(graph_);
 }
 
-const graph::DirectedWeightedGraph<Minutes> &TransportRouter::GetGraph() const {
+const graph::DirectedWeightedGraph<Minutes>& TransportRouter::GetGraph() const {
   return graph_;
 }
 
-graph::DirectedWeightedGraph<Minutes> &TransportRouter::GetGraph() {
+graph::DirectedWeightedGraph<Minutes>& TransportRouter::GetGraph() {
   return graph_;
 }
 
-const RoutingSettings &TransportRouter::GetRoutingSettings() const {
+const RoutingSettings& TransportRouter::GetRoutingSettings() const {
   return settings_;
 }
 
@@ -41,24 +41,24 @@ TransportRouter::GetStopsVertexIds() const {
   return stops_vertex_ids_;
 }
 
-std::unordered_map<const Stop *, TransportRouter::StopVertexIds, Hasher> &
+std::unordered_map<const Stop*, TransportRouter::StopVertexIds, Hasher>&
 TransportRouter::GetStopsVertexIds() {
   return stops_vertex_ids_;
 }
 
-const std::vector<const Stop *> &TransportRouter::GetVertexes() const {
+const std::vector<const Stop*>& TransportRouter::GetVertexes() const {
   return vertexes_;
 }
 
-std::vector<const Stop *> &TransportRouter::GetVertexes() {
+std::vector<const Stop*>& TransportRouter::GetVertexes() {
   return vertexes_;
 }
 
-const std::vector<TransportRouter::EdgeInfo> &TransportRouter::GetEdges() const {
+const std::vector<TransportRouter::EdgeInfo>& TransportRouter::GetEdges() const {
   return edges_;
 }
 
-std::vector<TransportRouter::EdgeInfo> &TransportRouter::GetEdges() {
+std::vector<TransportRouter::EdgeInfo>& TransportRouter::GetEdges() {
   return edges_;
 }
 
@@ -97,9 +97,9 @@ TransportRouter::FindRoute(const Stop *from, const Stop *to) const {
   return route_info;
 }
 
-void TransportRouter::AddStopsToGraph(const TransportCatalogue& cat) {
+void TransportRouter::AddStopsToGraph(const TransportCatalogue& catalogue) {
   graph::VertexId vertex_id = 0;
-  const auto& stops = cat.GetStops();
+  const auto& stops = catalogue.GetStops();
 
   for (const auto &stop : stops) {
     auto &vertex_ids = stops_vertex_ids_[&stop];
@@ -118,8 +118,10 @@ void TransportRouter::AddStopsToGraph(const TransportCatalogue& cat) {
   }
 }
 
-void TransportRouter::AddBusesToGraph(const TransportCatalogue& cat) {
-  const auto &buses = cat.GetBuses();
+void TransportRouter::AddBusesToGraph(const TransportCatalogue& catalogue) {
+  const auto& buses = catalogue.GetBuses();
+  static const double KM = 1000.0;
+  static const int HOUR = 60;
 
   for (const auto& bus : buses) {
     const auto& bus_stops = bus.stops_;
@@ -129,8 +131,8 @@ void TransportRouter::AddBusesToGraph(const TransportCatalogue& cat) {
       continue;
     }
 
-    auto compute_distance_from = [&cat, &bus_stops](size_t stop_idx) {
-      return cat.GetDistance(bus_stops[stop_idx], bus_stops[stop_idx + 1]);
+    auto compute_distance_from = [&catalogue, &bus_stops](size_t stop_idx) {
+      return catalogue.GetDistance(bus_stops[stop_idx], bus_stops[stop_idx + 1]);
     };
 
     for (size_t begin_i = 0; begin_i + 1 < stop_count; ++begin_i) {
@@ -149,7 +151,7 @@ void TransportRouter::AddBusesToGraph(const TransportCatalogue& cat) {
           stops_vertex_ids_.at(bus_stops[end_i]).out,
           Minutes(
             static_cast<double>(total_distance)
-              / (settings_.bus_velocity * 1000.0 / 60)
+              / (settings_.bus_velocity * KM / HOUR)
           )
         });
       }
