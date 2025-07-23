@@ -55,36 +55,21 @@ public:
   using EdgeInfo = std::optional<BusEdge>;
 
   TransportRouter() = default;
-  TransportRouter(RoutingSettings settings, const TransportCatalogue &cat);
+  TransportRouter(RoutingSettings settings, const TransportCatalogue& catalogue);
 
-  std::optional<RouteInfo> FindRoute(const Stop *from, const Stop *to) const;
+  std::optional<RouteInfo> FindRoute(const Stop* from, const Stop* to) const;
 
-  const std::unordered_map<const Stop*, StopVertexIds, Hasher>& GetStopsVertexIds() const;
-  std::unordered_map<const Stop*, StopVertexIds, Hasher>& GetStopsVertexIds();
-
-  const std::vector<const Stop*>& GetVertexes() const;
-  std::vector<const Stop*>& GetVertexes();
-
-  const std::vector<EdgeInfo>& GetEdges() const;
-  std::vector<EdgeInfo>& GetEdges();
+  const graph::DirectedWeightedGraph<Minutes>& GetGraph() const;
 
 private:
   void AddStopsToGraph(const TransportCatalogue& catalogue);
   void AddBusesToGraph(const TransportCatalogue& catalogue);
 
-  void UpdateRouterPtr();
-
-  const graph::DirectedWeightedGraph<Minutes>& GetGraph() const;
-  graph::DirectedWeightedGraph<Minutes>& GetGraph();
-
-  const RoutingSettings& GetRoutingSettings() const;
-  RoutingSettings& GetRoutingSettings();
-
   RoutingSettings settings_;
   graph::DirectedWeightedGraph<Minutes> graph_;
   std::unique_ptr<graph::Router<Minutes>> router_;
   std::unordered_map<const Stop*, StopVertexIds, Hasher> stops_vertex_ids_;
-  std::vector<const Stop *> vertexes_;
+  std::vector<const Stop*> vertexes_;
   std::vector<EdgeInfo> edges_;
 };
 
