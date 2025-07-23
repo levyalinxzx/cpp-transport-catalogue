@@ -16,54 +16,7 @@ TransportRouter::TransportRouter(RoutingSettings settings, const TransportCatalo
   router_ = std::make_unique<graph::Router<Minutes>>(graph_);
 }
 
-void TransportRouter::UpdateRouterPtr() {
-  router_ = std::make_unique<graph::Router<Minutes>>(graph_);
-}
-
-const graph::DirectedWeightedGraph<Minutes>& TransportRouter::GetGraph() const {
-  return graph_;
-}
-
-graph::DirectedWeightedGraph<Minutes>& TransportRouter::GetGraph() {
-  return graph_;
-}
-
-const RoutingSettings& TransportRouter::GetRoutingSettings() const {
-  return settings_;
-}
-
-RoutingSettings &TransportRouter::GetRoutingSettings() {
-  return settings_;
-}
-
-const std::unordered_map<const Stop *, TransportRouter::StopVertexIds, Hasher> &
-TransportRouter::GetStopsVertexIds() const {
-  return stops_vertex_ids_;
-}
-
-std::unordered_map<const Stop*, TransportRouter::StopVertexIds, Hasher>&
-TransportRouter::GetStopsVertexIds() {
-  return stops_vertex_ids_;
-}
-
-const std::vector<const Stop*>& TransportRouter::GetVertexes() const {
-  return vertexes_;
-}
-
-std::vector<const Stop*>& TransportRouter::GetVertexes() {
-  return vertexes_;
-}
-
-const std::vector<TransportRouter::EdgeInfo>& TransportRouter::GetEdges() const {
-  return edges_;
-}
-
-std::vector<TransportRouter::EdgeInfo>& TransportRouter::GetEdges() {
-  return edges_;
-}
-
-std::optional<RouteInfo>
-TransportRouter::FindRoute(const Stop *from, const Stop *to) const {
+std::optional<RouteInfo> TransportRouter::FindRoute(const Stop* from, const Stop* to) const {
   const graph::VertexId vertex_from = stops_vertex_ids_.at(from).out;
   const graph::VertexId vertex_to = stops_vertex_ids_.at(to).out;
   const auto route = router_->BuildRoute(vertex_from, vertex_to);
@@ -77,8 +30,8 @@ TransportRouter::FindRoute(const Stop *from, const Stop *to) const {
   route_info.items.reserve(route->edges.size());
 
   for (const auto edge_id : route->edges) {
-    const auto &edge = graph_.GetEdge(edge_id);
-    const auto &bus_edge_info = edges_[edge_id];
+    const auto& edge = graph_.GetEdge(edge_id);
+    const auto& bus_edge_info = edges_[edge_id];
 
     if (bus_edge_info.has_value()) {
       route_info.items.emplace_back(RouteInfo::BusItem{
@@ -102,7 +55,7 @@ void TransportRouter::AddStopsToGraph(const TransportCatalogue& catalogue) {
   const auto& stops = catalogue.GetStops();
 
   for (const auto &stop : stops) {
-    auto &vertex_ids = stops_vertex_ids_[&stop];
+    auto& vertex_ids = stops_vertex_ids_[&stop];
 
     vertex_ids.in = vertex_id++;
     vertex_ids.out = vertex_id++;
